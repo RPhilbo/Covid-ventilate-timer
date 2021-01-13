@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +50,10 @@ SPI_HandleTypeDef hspi1;
 TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN PV */
+uint32_t LoopCountWindowClosed = 30*60;
+uint32_t LoopCountWindowOpened = 5*60;
 
+bool	ButtonPressed;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -106,12 +109,132 @@ int main(void)
   MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
 
+  	  ButtonPressed = false;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+	  HAL_Delay(1000);		// Delay in ms
+
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, 1);		//	Red
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 1);		//	Green
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, 1);		//	Blue
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 1);		//	Orange
+
+	  HAL_Delay(1*1000);	// Delay in ms
+
+
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, 0);		//
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);		//
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, 0);		//
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);		//
+
+
+	  HAL_Delay(1*1000);	// Delay in ms
+
+
+
+
+//	+	+	+		Alarm to Open the windows for fresh air and wait for PushButton	to confirm the opened windows	+	+	+	//
+	  for (int var = 0; var < 1024; var++) {
+		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);	// Red
+		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);	// Green
+		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);	// Blue
+		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);	// Orange
+
+		  HAL_Delay(200);	// Delay in ms
+
+		  if (ButtonPressed == true) {			// Loop is running until the PushButton is pressed to confirm the opened windows
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, 0);		//	Red
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);		//	Green
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, 0);		//	Blue
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);		//	Orange
+
+			  HAL_Delay(100);
+			  ButtonPressed = false;
+			  break;
+		} else {
+			var = 42;
+		}
+	}
+
+
+
+
+
+
+
+//	+	+	+		Waiting the amount of time, for how long the windows should be opened	+	+	+	//
+	  for (int var = 0; var < LoopCountWindowOpened; var++) {
+//		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);	// Red
+		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);	// Green
+//		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);	// Blue
+//		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);	// Orange
+
+		  HAL_Delay(1000);	// Delay in ms
+	}
+
+
+
+// The windows can now be closed again
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, 0);		//	Red
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);		//	Green
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, 0);		//	Blue
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);		//	Orange
+	  HAL_Delay(100);	// Delay in ms
+
+
+
+
+//	+	+	+		Alarm to Close the windows	and wait for PushButton	to confirm the closed windows	+	+	+	//
+	  for (int var = 0; var < 1024; var++) {
+		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);	// Red
+		  //HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);	// Green
+		  //HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);	// Blue
+		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);	// Orange
+
+		  HAL_Delay(200);	// Delay in ms
+
+		  if (ButtonPressed == true) {			// Loop is running until the PushButton is pressed to confirm the closed windows
+
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, 0);		//	Red
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);		//	Green
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, 0);		//	Blue
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);		//	Orange
+
+			  HAL_Delay(100);
+			  ButtonPressed = false;
+			  break;
+		} else {
+			var = 42;
+		}
+	}
+// Windows are now closed. Start to wait the amount of time with closed windows.
+
+
+
+//	+	+	+		Waiting the amount of time, for how long the windows can be closed	+	+	+	//
+	  for (int var = 0; var < LoopCountWindowClosed; var++) {
+			  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);	// Red
+	//		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);	// Green
+	//		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);	// Blue
+	//		  HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);	// Orange
+
+			  HAL_Delay(1000);	// Delay in ms
+	}
+
+
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, 0);		//	Red
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);		//	Green
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, 0);		//	Blue
+	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, 0);		//	Orange
+
+
+
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
@@ -368,7 +491,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
@@ -407,9 +530,27 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(MEMS_INT2_GPIO_Port, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+  * @brief EXTI line detection callbacks
+  * @param GPIO_Pin: Specifies the pins connected EXTI line
+  * @retval None
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  if(GPIO_Pin == GPIO_PIN_0)
+  {
+    /* Toggle LED1 */
+    ButtonPressed = true;
+  }
+}
 
 /* USER CODE END 4 */
 
